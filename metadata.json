@@ -1,0 +1,6 @@
+{
+  "name": "Baltic Overwatch Dashboard",
+  "description": "Real-time radar and security map over the Baltic States. Features multi-layer threat visualization (drones, balloons) and defensive advisories.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
