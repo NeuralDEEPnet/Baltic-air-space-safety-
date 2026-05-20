@@ -59,6 +59,8 @@ export default function Dashboard({ apiKey }: { apiKey: string }) {
   const [selectedTarget, setSelectedTarget] = useState<Target | null>(null);
   const [intelFeed, setIntelFeed] = useState(INITIAL_INTEL);
 
+  const liveTarget = selectedTarget ? (targets.find(t => t.id === selectedTarget.id) || selectedTarget) : null;
+
   // Rotating intel effect
   useEffect(() => {
     if (!hasValidKey) return;
@@ -93,6 +95,7 @@ export default function Dashboard({ apiKey }: { apiKey: string }) {
       history: [],
     }));
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTargets(initialTargets);
 
     const interval = setInterval(() => {
@@ -171,7 +174,7 @@ export default function Dashboard({ apiKey }: { apiKey: string }) {
 
             <div className="space-y-3">
               <AnimatePresence>
-                {targets.sort((a, b) => b.threatLevel.localeCompare(a.threatLevel)).map((t) => (
+                {[...targets].sort((a, b) => b.threatLevel.localeCompare(a.threatLevel)).map((t) => (
                   <motion.div
                     key={t.id}
                     layout // Animate sorting changes
@@ -233,7 +236,7 @@ export default function Dashboard({ apiKey }: { apiKey: string }) {
           <Map
             defaultZoom={6}
             defaultCenter={{ lat: 56.5, lng: 24.5 }}
-            mapId="BALTIC_RADAR_MAP_ID"
+            mapId="DEMO_MAP_ID"
             internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
             style={{ width: '100%', height: '100%' }}
             disableDefaultUI={true}
@@ -316,80 +319,75 @@ export default function Dashboard({ apiKey }: { apiKey: string }) {
 
           {/* Target Details Panel */}
           <AnimatePresence>
-            {selectedTarget && (
-              (() => {
-                const liveTarget = targets.find(t => t.id === selectedTarget.id) || selectedTarget;
-                return (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    className="absolute bottom-6 right-6 bg-neutral-900/90 backdrop-blur-md border border-neutral-700 p-5 rounded-lg w-80 shadow-2xl z-20 pointer-events-auto"
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <div className="text-xs text-neutral-500 tracking-widest font-bold mb-1">TARGET LOCK</div>
-                        <div className={`text-xl font-black tracking-widest ${
-                          liveTarget.threatLevel === 'HIGH' ? 'text-rose-400' :
-                          liveTarget.threatLevel === 'MEDIUM' ? 'text-amber-400' :
-                          'text-blue-400'
-                        }`}>
-                          {liveTarget.id}
-                        </div>
-                      </div>
-                      <button onClick={() => setSelectedTarget(null)} className="text-neutral-400 hover:text-white transition-colors cursor-pointer">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                      </button>
+            {liveTarget && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="absolute bottom-6 right-6 bg-neutral-900/90 backdrop-blur-md border border-neutral-700 p-5 rounded-lg w-80 shadow-2xl z-20 pointer-events-auto"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <div className="text-xs text-neutral-500 tracking-widest font-bold mb-1">TARGET LOCK</div>
+                    <div className={`text-xl font-black tracking-widest ${
+                      liveTarget.threatLevel === 'HIGH' ? 'text-rose-400' :
+                      liveTarget.threatLevel === 'MEDIUM' ? 'text-amber-400' :
+                      'text-blue-400'
+                    }`}>
+                      {liveTarget.id}
                     </div>
-                    
-                    <div className="space-y-3">
-                       <div className="flex justify-between items-end border-b border-neutral-800 pb-2">
-                         <span className="text-xs text-neutral-500">TYPE</span>
-                         <span className="text-sm font-bold text-neutral-200">{liveTarget.type}</span>
-                       </div>
-                       <div className="flex justify-between items-end border-b border-neutral-800 pb-2">
-                         <span className="text-xs text-neutral-500">SPEED</span>
-                         <span className="text-sm font-bold text-neutral-200">{liveTarget.speed.toFixed(0)} KM/H</span>
-                       </div>
-                       <div className="flex justify-between items-end border-b border-neutral-800 pb-2">
-                         <span className="text-xs text-neutral-500">ALTITUDE</span>
-                         <span className="text-sm font-bold text-neutral-200">{liveTarget.altitude.toFixed(0)} M</span>
-                       </div>
-                       <div className="flex justify-between items-end border-b border-neutral-800 pb-2">
-                         <span className="text-xs text-neutral-500">HEADING</span>
-                         <span className="text-sm font-bold text-neutral-200">{liveTarget.heading.toFixed(1)}°</span>
-                       </div>
-                       <div className="flex justify-between items-end pb-1">
-                         <span className="text-xs text-neutral-500">LAST UPDATED</span>
-                         <span className="text-xs font-mono text-neutral-400">
-                           {new Date(liveTarget.lastUpdated).toISOString().split('T')[1].split('.')[0]}Z
-                         </span>
-                       </div>
-                    </div>
+                  </div>
+                  <button onClick={() => setSelectedTarget(null)} className="text-neutral-400 hover:text-white transition-colors cursor-pointer">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                  </button>
+                </div>
+                
+                <div className="space-y-3">
+                   <div className="flex justify-between items-end border-b border-neutral-800 pb-2">
+                     <span className="text-xs text-neutral-500">TYPE</span>
+                     <span className="text-sm font-bold text-neutral-200">{liveTarget.type}</span>
+                   </div>
+                   <div className="flex justify-between items-end border-b border-neutral-800 pb-2">
+                     <span className="text-xs text-neutral-500">SPEED</span>
+                     <span className="text-sm font-bold text-neutral-200">{liveTarget.speed.toFixed(0)} KM/H</span>
+                   </div>
+                   <div className="flex justify-between items-end border-b border-neutral-800 pb-2">
+                     <span className="text-xs text-neutral-500">ALTITUDE</span>
+                     <span className="text-sm font-bold text-neutral-200">{liveTarget.altitude.toFixed(0)} M</span>
+                   </div>
+                   <div className="flex justify-between items-end border-b border-neutral-800 pb-2">
+                     <span className="text-xs text-neutral-500">HEADING</span>
+                     <span className="text-sm font-bold text-neutral-200">{liveTarget.heading.toFixed(1)}°</span>
+                   </div>
+                   <div className="flex justify-between items-end pb-1">
+                     <span className="text-xs text-neutral-500">LAST UPDATED</span>
+                     <span className="text-xs font-mono text-neutral-400">
+                       {new Date(liveTarget.lastUpdated).toISOString().split('T')[1].split('.')[0]}Z
+                     </span>
+                   </div>
+                </div>
 
-                    {liveTarget.history.length > 0 && (
-                      <div className="mt-6 border-t border-neutral-800 pt-4">
-                        <div className="text-xs text-neutral-500 font-bold mb-3 tracking-widest">POSITION HISTORY</div>
-                        <div className="space-y-2">
-                          {liveTarget.history.map((entry, idx) => (
-                            <div key={idx} className="flex justify-between items-center text-[10px] text-neutral-400 font-mono bg-neutral-950/50 p-1.5 rounded">
-                              <span>{new Date(entry.timestamp).toISOString().split('T')[1].split('.')[0]}Z</span>
-                              <span>{entry.lat.toFixed(3)}, {entry.lng.toFixed(3)}</span>
-                              <span>{entry.altitude.toFixed(0)}m</span>
-                            </div>
-                          ))}
+                {liveTarget.history.length > 0 && (
+                  <div className="mt-6 border-t border-neutral-800 pt-4">
+                    <div className="text-xs text-neutral-500 font-bold mb-3 tracking-widest">POSITION HISTORY</div>
+                    <div className="space-y-2">
+                      {liveTarget.history.map((entry, idx) => (
+                        <div key={idx} className="flex justify-between items-center text-[10px] text-neutral-400 font-mono bg-neutral-950/50 p-1.5 rounded">
+                          <span>{new Date(entry.timestamp).toISOString().split('T')[1].split('.')[0]}Z</span>
+                          <span>{entry.lat.toFixed(3)}, {entry.lng.toFixed(3)}</span>
+                          <span>{entry.altitude.toFixed(0)}m</span>
                         </div>
-                      </div>
-                    )}
-                    
-                    {liveTarget.threatLevel === 'HIGH' && (
-                      <div className="mt-4 bg-rose-500/10 border border-rose-500/30 p-2 rounded text-xs text-rose-400 text-center animate-pulse">
-                        IMMEDIATE INTERCEPT RECOMMENDED
-                      </div>
-                    )}
-                  </motion.div>
-                );
-              })()
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {liveTarget.threatLevel === 'HIGH' && (
+                  <div className="mt-4 bg-rose-500/10 border border-rose-500/30 p-2 rounded text-xs text-rose-400 text-center animate-pulse">
+                    IMMEDIATE INTERCEPT RECOMMENDED
+                  </div>
+                )}
+              </motion.div>
             )}
           </AnimatePresence>
 
@@ -484,13 +482,11 @@ function TargetMarker({ target, isSelected, onClick }: { target: Target, isSelec
         </div>
 
         {/* Hover / Selected Label */}
-        {(isSelected || true) && (
-          <div className="absolute top-10 left-1/2 -translate-x-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
-            <div className={`px-2 py-1 text-[10px] font-bold rounded ${bgColor} backdrop-blur-md border border-current`}>
-              {target.id}
-            </div>
+        <div className={`absolute top-10 left-1/2 -translate-x-1/2 whitespace-nowrap pointer-events-none transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+          <div className={`px-2 py-1 text-[10px] font-bold rounded ${bgColor} backdrop-blur-md border border-current`}>
+            {target.id}
           </div>
-        )}
+        </div>
       </div>
     </AdvancedMarker>
   );
